@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify, send_file
 from yt_dlp import YoutubeDL
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='.', static_folder='.')
 
 # Directory for saving downloaded videos
 DOWNLOAD_DIR = "downloads"
@@ -23,7 +23,6 @@ def get_formats(url):
         ]
     return formats
 
-# Route for the main page
 @app.route('/')
 def index():
     return render_template('index.html')
