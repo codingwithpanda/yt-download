@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Downloader</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="animated-title">YouTube Video Downloader by Coding With Panda</h1>
+        <div class="input-container">
+            <input type="text" id="video-url" placeholder="Enter YouTube video URL" />
+            <button onclick="fetchFormats()">Submit</button>
+        </div>
+        <div id="resolution-container" style="display:none;">
+            <label for="resolution">Select Resolution:</label>
+            <select id="resolution"></select>
+            <button onclick="downloadVideo()">Download</button>
+        </div>
+        <p id="status"></p>
+    </div>
+
+    <script>
+        const BASE_URL = "https://yt-download-gtii.onrender.com";  // Your backend URL on Render
+    
+        async function fetchFormats() {
+            const url = document.getElementById("video-url").value;
+            const response = await fetch(`${BASE_URL}/get_formats`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url })
+            });
+    
+            if (response.ok) {
+                const formats = await response.json();
+                const resolutionSelect = document.getElementById("resolution");
+                resolutionSelect.innerHTML = "";
+    
+                formats.forEach(format => {
+                    const option = document.createElement("option");
+                    option.value = format.format_id;
+                    option.textContent = `${format.resolution} - ${format.ext}`;
+                    resolutionSelect.appendChild(option);
+                });
+                document.getElementById("resolution-container").style.display = "block";
+            } else {
+                document.getElementById("status").textContent = "Failed to fetch formats. Please check the URL and try again.";
+            }
+        }
+    
+        async function downloadVideo() {
+            const url = document.getElementById("video-url").value;
+            const format_id = document.getElementById("resolution").value;
+            const response = await fetch(`${BASE_URL}/download`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url, format_id })
+            });
+    
+            if (response.ok) {
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = downloadUrl;
+                a.download = "downloaded_video.mp4";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                document.getElementById("status").textContent = "Download started!";
+            } else {
+                document.getElementById("status").textContent = "Failed to download video.";
+            }
+        }
+    </script>
+    
+</body>
+</html>
